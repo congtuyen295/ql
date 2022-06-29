@@ -3,10 +3,34 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
+import { useMutation, useQuery } from "@apollo/client";
+import { getAllAuthors } from "../grapql-client/queries";
+import { createAuthor } from "../grapql-client/mutation";
+
+
 
 const Forms = () => {
+
+  const {loading,  error, data} = useQuery(getAllAuthors)
+  const [addAuthor, dataMutation] = useMutation(createAuthor)
+
+  if(loading) return <p>Loading...</p>
+  if(error) return <p>Error!</p>
+
+  const handleAddAuthor = () => {
+    addAuthor({
+      variables: {
+        name: "qq",
+        age: 18
+      },
+      refetchQueries: [{query: getAllAuthors}]
+    })
+  }
   return (
     <Row>
+      <Button className="float-right" variant="info" type="submit" onClick={handleAddAuthor}>
+            Add author
+          </Button>
       <Col>
         <Form>
           <Form.Group>
@@ -16,11 +40,13 @@ const Forms = () => {
             <Form.Control type="text" placeholder="Book genre" />
           </Form.Group>
           <Form.Group>
-            <Form.Control as="select" defaultValue="Select author">
-              <option disabled>Select author</option>
+            <Form.Control as="select" >
+              {
+                data?.authors.map(a => <option key={a.id} value={a.id}>{a.name}</option>)
+              }
             </Form.Control>
           </Form.Group>
-          <Button className="float-right" variant="info" type="submit">
+          <Button className="float-right" variant="info" type="submit" >
             Add Book
           </Button>
         </Form>
